@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./echarts.min.js"></script>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    .box {
+      width: 100vw;
+      height: 90vh;
+      background-color: white;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+      background-image:
+        linear-gradient(rgba(128, 128, 212, 0.5), rgba(150, 150, 95, 0.5)),
+        url("back.jpg")
+    }
+
+    .canvas {
+      width: 1070px;
+      height: 680px;
+      /* background-color: green; */
+    }
+
+    .smallBox {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .head {
+      width: 100vw;
+      height: 5vh;
+      text-align: center;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: 1.1vh;
+      line-height: 5vh;
+      background-color: rgba(89, 133, 230, 0.523);
+    }
+
+    .bigBox {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .bottom {
+      width: 100vw;
+      height: 5vh;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      background-color: #bee478c9;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bigBox">
+    <div class="head">实时足球技战术分析平台</div>
+    <div class="box">
+      <div class="smallBox">
+        <div id="score1" style="width: 600px;height:400px;"></div>
+        <div id="score2" style="width: 600px;height:400px;"></div>
+      </div>
+      <div class="canvas">
+        <canvas id="canvas" width="1070" height="680"></canvas>
+        <canvas id="canvas1" width="1070" height="680"></canvas>
+      </div>
+      <div class="door"></div>
+    </div>
+    <div class="bottom">
+      <div class="file">上传两个队伍结果</button><input type="file" id="file" multiple></div>
+    </div>
+  </div>
+</body>
+<!-- eCharts动态图表 -->
+<script text="text/script">
+  // 读取csv文件
+  var file = document.querySelector("#file")
+  var awayTeam = []
+  var awayScore = []
+  var awayTeamMate = []
+  var mainTeam = []
+  var mainScore = []
+  var mainTeamMate = []
+  file.addEventListener('change', function () {
+    var reader = new FileReader();
+    var files = [...this.files]
+    // console.log(files);
+
+    files.forEach(function (item) {
+      var myReader = new FileReader();
+      // readAsText以文本的方式来读取csv文件，性能优于读取xlsx文件
+      myReader.readAsText(item);
+      // onload文件读取完成时触发
+      myReader.onload = () => {
+        let result = myReader.result.replace(/\r\n/g, ',')
+        // myReader.result
+        if (item.name === "主队结果.csv") {
+          let mainTeam = result.split(',');
+          for (let i = 24; i < mainTeam.length; i += 25) {
+            mainScore.push(mainTeam[i])
+            for (let j = 24; j > 0; j--) {
+              mainTeamMate.push(mainTeam[i - j])
+            }
+          }
+        }
+        if (item.name === "客队结果.csv") {
+          let awayTeam = result.split(',');
+          for (let i = 24; i < awayTeam.length; i += 25) {
+            awayScore.push(awayTeam[i])
+            for (let j = 24; j > 0; j--) {
+              awayTeamMate.push(awayTeam[i - j])
+            }
+          }
+        }
+      }
+      // onerror文件读取失败是触发
+      myReader.onerror = () => {
+        alert("文件读取出错啦!")
+      }
+    })
+  })
+
+  // 获取DOM元素里面的echarts画板。初始化变量
+  //#region 
+  var chartDom1 = document.getElementById('score1');
+  var myChart1 = echarts.init(chartDom1);
+  var chartDom2 = document.getElementById('score2')
+  var myChart2 = echarts.init(chartDom2)
+  var option1;
+  var option2;
+  //#endregion
+
+  // 数据初始化
+  let data1 = [];
+  let data2 = [];
+  let data3 = [];
+
+  // echarts配置项
+  option1 = {
+    title: {
+      text: '主场队伍得分',
+      textStyle: {
+        color: 'red'
+      },
+    },
+    textStyle: {
+      color: 'white',
+      fontSize: 20
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        animation: false
+      }
+    },
+    xAxis: {
+      name: '帧数',
+      axisLine: {
+        lineStyle: {
+          color: 'white'
+        },
+      },
+      nameTextStyle: {
+        fontSize: 20
+      },
+      boundaryGap: ['5%', '100%'],
+      data: data3,
+      min: 0
+    },
+    yAxis: {
+      type: 'value',
+      boundaryGap: [0, '100%'],
+      min: 0,
+      max: 100,
+      splitLine: {
+        show: false
+      }
+    },
+    series: [
+      {
+        name: '当前帧分数',
+        type: 'line',
+        showSymbol: false,
+        data: data1,
+        lineStyle: {
+          color: 'red',
+        }
+      }
+    ]
+  };
+  option2 = {
+    title: {
+      text: '客场队伍得分',
+      textStyle: {
+        color: 'blue'
+      },
+    },
+    textStyle: {
+      color: 'white',
+      fontSize: 20
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        animation: false
+      }
+    },
+    xAxis: {
+      name: '帧数',
+      axisLine: {
+        lineStyle: {
+          color: 'white'
+        }
+      },
+      nameTextStyle: {
+        fontSize: 20
+      },
+      boundaryGap: ['5%', '100%'],
+      splitLine: {
+        show: false
+      },
+      data: data3,
+      min: 0,
+    },
+    yAxis: {
+      type: 'value',
+      boundaryGap: [0, '100%'],
+      min: 0,
+      max: 100,
+      splitLine: {
+        show: false
+      },
+    },
+    series: [
+      {
+        name: '当前帧分数',
+        type: 'line',
+        showSymbol: false,
+        data: data2,
+        lineStyle: {
+          color: 'blue'
+        }
+      }
+    ]
+  };
+
+  // 计时动态添加数据
+  var count = 0
+  var mainAsis = []
+  var awayAsis = []
+  setInterval(function () {
+    if (count < mainScore.length && count < awayScore.length) {
+      data1.push(mainScore[count])
+      data2.push(awayScore[count])
+      data3.push(count)
+      mainAsis = mainTeamMate.slice(count * 24, (count + 1) * 24)
+      awayAsis = awayTeamMate.slice(count * 24, (count + 1) * 24)
+      // raf = window.requestAnimationFrame(draw);
+    }
+    myChart1.setOption({
+      xAxis: [
+        { data: data3 }
+      ],
+      series: [
+        {
+          data: data1,
+        }
+      ]
+    });
+    myChart2.setOption({
+      xAxis: [
+        { data: data3 }
+      ],
+      series: [
+        {
+          data: data2
+        }
+      ]
+    });
+    count++;
+  }, 40);
+  option1 && myChart1.setOption(option1);
+  option2 && myChart2.setOption(option2)
+
+  // canvas 绘制场上情况
+  var canvas = document.getElementById("canvas");
+  var canvas1 = document.getElementById("canvas1");
+  var ctx = canvas.getContext("2d");
+  var ctx1 = canvas1.getContext("2d")
+  var raf;
+
+  // 对于相似代码进行封装
+  var base = {
+    x: 10,
+    y: 10,
+    radius: 10,
+    draw: function () {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, true);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  }
+  // 定义场上变量
+  // #region
+  var awayTeamMate1 = { ...base, color: 'blue' };
+  var awayTeamMate2 = { ...base, color: 'blue' };
+  var awayTeamMate3 = { ...base, color: 'blue' };
+  var awayTeamMate4 = { ...base, color: 'blue' };
+  var awayTeamMate5 = { ...base, color: 'blue' };
+  var awayTeamMate6 = { ...base, color: 'blue' };
+  var awayTeamMate7 = { ...base, color: 'blue' };
+  var awayTeamMate8 = { ...base, color: 'blue' };
+  var awayTeamMate9 = { ...base, color: 'blue' };
+  var awayTeamMate10 = { ...base, color: 'blue' };
+  var awayTeamMate11 = { ...base, color: 'blue' };
+  var mainTeamMate1 = { ...base, color: 'red' };
+  var mainTeamMate2 = { ...base, color: 'red' };
+  var mainTeamMate3 = { ...base, color: 'red' };
+  var mainTeamMate4 = { ...base, color: 'red' };
+  var mainTeamMate5 = { ...base, color: 'red' };
+  var mainTeamMate6 = { ...base, color: 'red' };
+  var mainTeamMate7 = { ...base, color: 'red' };
+  var mainTeamMate8 = { ...base, color: 'red' };
+  var mainTeamMate9 = { ...base, color: 'red' };
+  var mainTeamMate10 = { ...base, color: 'red' };
+  var mainTeamMate11 = { ...base, color: 'red' };
+  var ball = { ...base, color: 'white', radius: 7 };
+  //#endregion
+
+  // 场地绘制
+  // #region
+  var footdoor1 = {
+    x: 10,
+    y: 248.4,
+    w: 55,
+    h: 183.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var footdoor2 = {
+    x: 1005,
+    y: 248.4,
+    w: 55,
+    h: 183.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var door1 = {
+    x: 0,
+    y: 303.4,
+    w: 10,
+    h: 73.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var door2 = {
+    x: 1060,
+    y: 303.4,
+    w: 10,
+    h: 73.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var freeZone1 = {
+    x: 10,
+    y: 138.4,
+    w: 165,
+    h: 403.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var freeZone2 = {
+    x: 895,
+    y: 138.4,
+    w: 165,
+    h: 403.2,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var flagZone1 = {
+    x: 10,
+    y: 0,
+    w: 525,
+    h: 680,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var flagZone2 = {
+    x: 535,
+    y: 0,
+    w: 525,
+    h: 680,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.strokeRect(this.x, this.y, this.w, this.h);
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    },
+  };
+  var centerZone = {
+    x: 535,
+    y: 340,
+    r: 91.5,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2, false); // 绘制
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = this.color;
+      ctx.stroke();
+      ctx.closePath();
+    },
+  }
+  var arc1 = {
+    x: 130,
+    y: 340,
+    r: 91.5,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, (Math.PI / 180) * -60, (Math.PI / 180) * 60, false); // 绘制
+      ctx.stroke();
+      ctx.closePath();
+    },
+  }
+  var arc2 = {
+    x: 940,
+    y: 340,
+    r: 91.5,
+    color: "white",
+    draw: function () {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, (Math.PI / 180) * 120, (Math.PI / 180) * 240, false); // 绘制
+      ctx.stroke();
+      ctx.closePath();
+    },
+  }
+  //#endregion
+
+  // 重绘页面
+  function startDraw() {
+    footdoor1.draw()
+    footdoor2.draw()
+    door1.draw()
+    door2.draw()
+    freeZone1.draw()
+    freeZone2.draw()
+    flagZone1.draw()
+    flagZone2.draw()
+    centerZone.draw()
+    arc1.draw()
+    arc2.draw()
+  }
+  function drawall() {
+    awayTeamMate1.draw()
+    awayTeamMate2.draw()
+    awayTeamMate3.draw()
+    awayTeamMate4.draw()
+    awayTeamMate5.draw()
+    awayTeamMate6.draw()
+    awayTeamMate7.draw()
+    awayTeamMate8.draw()
+    awayTeamMate9.draw()
+    awayTeamMate10.draw()
+    awayTeamMate11.draw()
+    mainTeamMate1.draw()
+    mainTeamMate2.draw()
+    mainTeamMate3.draw()
+    mainTeamMate4.draw()
+    mainTeamMate5.draw()
+    mainTeamMate6.draw()
+    mainTeamMate7.draw()
+    mainTeamMate8.draw()
+    mainTeamMate9.draw()
+    mainTeamMate10.draw()
+    mainTeamMate11.draw()
+    ball.draw()
+  }
+  startDraw();
+  drawall();
+
+  // 绘制场上球员
+  function drawMate() {
+    awayTeamMate1.x = Math.floor(awayAsis[0] * 1050 + 10);
+    awayTeamMate1.y = Math.floor(awayAsis[1] * 680);
+    awayTeamMate2.x = Math.floor(awayAsis[2] * 1050 + 10)
+    awayTeamMate2.y = Math.floor(awayAsis[3] * 680)
+    awayTeamMate3.x = Math.floor(awayAsis[4] * 1050 + 10)
+    awayTeamMate3.y = Math.floor(awayAsis[5] * 680)
+    awayTeamMate4.x = Math.floor(awayAsis[6] * 1050 + 10)
+    awayTeamMate4.y = Math.floor(awayAsis[7] * 680)
+    awayTeamMate5.x = Math.floor(awayAsis[8] * 1050 + 10)
+    awayTeamMate5.y = Math.floor(awayAsis[9] * 680)
+    awayTeamMate6.x = Math.floor(awayAsis[10] * 1050 + 10)
+    awayTeamMate6.y = Math.floor(awayAsis[11] * 680)
+    awayTeamMate7.x = Math.floor(awayAsis[12] * 1050 + 10)
+    awayTeamMate7.y = Math.floor(awayAsis[13] * 680)
+    awayTeamMate8.x = Math.floor(awayAsis[14] * 1050 + 10)
+    awayTeamMate8.y = Math.floor(awayAsis[15] * 680)
+    awayTeamMate9.x = Math.floor(awayAsis[16] * 1050 + 10)
+    awayTeamMate9.y = Math.floor(awayAsis[17] * 680)
+    awayTeamMate10.x = Math.floor(awayAsis[18] * 1050 + 10)
+    awayTeamMate10.y = Math.floor(awayAsis[19] * 680)
+    awayTeamMate11.x = Math.floor(awayAsis[20] * 1050 + 10)
+    awayTeamMate11.y = Math.floor(awayAsis[21] * 680)
+    mainTeamMate1.x = Math.floor(mainAsis[0] * 1050 + 10)
+    mainTeamMate1.y = Math.floor(mainAsis[1] * 680)
+    mainTeamMate2.x = Math.floor(mainAsis[2] * 1050 + 10)
+    mainTeamMate2.y = Math.floor(mainAsis[3] * 680)
+    mainTeamMate3.x = Math.floor(mainAsis[4] * 1050 + 10)
+    mainTeamMate3.y = Math.floor(mainAsis[5] * 680)
+    mainTeamMate4.x = Math.floor(mainAsis[6] * 1050 + 10)
+    mainTeamMate4.y = Math.floor(mainAsis[7] * 680)
+    mainTeamMate5.x = Math.floor(mainAsis[8] * 1050 + 10)
+    mainTeamMate5.y = Math.floor(mainAsis[9] * 680)
+    mainTeamMate6.x = Math.floor(mainAsis[10] * 1050 + 10)
+    mainTeamMate6.y = Math.floor(mainAsis[11] * 680)
+    mainTeamMate7.x = Math.floor(mainAsis[12] * 1050 + 10)
+    mainTeamMate7.y = Math.floor(mainAsis[13] * 680)
+    mainTeamMate8.x = Math.floor(mainAsis[14] * 1050 + 10)
+    mainTeamMate8.y = Math.floor(mainAsis[15] * 680)
+    mainTeamMate9.x = Math.floor(mainAsis[16] * 1050 + 10)
+    mainTeamMate9.y = Math.floor(mainAsis[17] * 680)
+    mainTeamMate10.x = Math.floor(mainAsis[18] * 1050 + 10)
+    mainTeamMate10.y = Math.floor(mainAsis[19] * 680)
+    mainTeamMate11.x = Math.floor(mainAsis[20] * 1050 + 10)
+    mainTeamMate11.y = Math.floor(mainAsis[21] * 680)
+  }
+
+  // 绘制场上情况
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ctx.fillStyle = "rgba(255,255,255,0.3)";
+    // console.log(mainAsis[22], typeof mainAsis[22]);
+    if (mainAsis[22] === NaN || "NaN") {
+      ball.x = mainAsis[22] * 1050 + 10
+      ball.y = mainAsis[23] * 680
+    } else {
+      ball.x = awayAsis[22] * 1050 + 10
+      ball.y = awayAsis[23] * 680
+      // if (awayAsis[22] === NaN || "NaN") {
+      if (mainAsis[22] === "NaN" && awayAsis[22] === "NaN") {
+        console.log("球踢出去了");
+      }
+      // }
+    }
+    drawMate()
+    drawall();
+    raf = window.requestAnimationFrame(draw);
+  }
+
+
+</script>
+<!-- canvas绘图 -->
+
+
+</html>

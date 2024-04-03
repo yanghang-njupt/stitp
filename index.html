@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="common.css">
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+    .main {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: start;
+    }
+
+    .title {
+      font-size: 5.5vh;
+      font-weight: 500;
+      letter-spacing: 0px;
+      color: rgba(35, 120, 4, 1);
+    }
+
+    .login {
+      margin-left: 20vh;
+      margin-bottom: 10vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .user,
+    .password {
+      display: flex;
+      width: 31.25vw;
+      flex-direction: column;
+      align-items: start;
+    }
+
+    .user {
+      margin-bottom: 3vh;
+    }
+
+    .password {
+      margin-bottom: 1vh;
+    }
+
+    .small-title {
+      margin-left: 1vw;
+      font-size: 1.67vh;
+      font-weight: 500;
+      letter-spacing: 0px;
+      color: rgba(35, 120, 4, 1);
+    }
+
+    .ipt {
+      width: 31.25vw;
+      height: 6.5vh;
+      border: 1px solid rgba(35, 120, 4, 1);
+      border-radius: 20px;
+      font-size: 1.67vh;
+      padding-left: 1vw;
+      line-height: 28.96px;
+    }
+
+    .register {
+      margin-left: 20vw;
+      font-size: 1.67vh;
+      letter-spacing: 2px;
+      line-height: 28.96px;
+      text-decoration-line: underline;
+      color: rgba(166, 159, 159, 1);
+    }
+
+    .btn {
+      width: 18vw;
+      height: 6vh;
+      background: rgb(43, 136, 48);
+      border-radius: 0.7vw;
+      color: #fff;
+      font-size: 1vw;
+      letter-spacing: 2px;
+      margin-top: 1vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main">
+    <img src="./image.png" alt="主页背景" style=" width: 47.4vw;object-fit:cover;">
+    <div class="login">
+      <div class="title">登录</div>
+      <div class="user">
+        <div class="small-title">邮箱/手机号</div>
+        <input type="text" class="ipt">
+      </div>
+      <div class="password">
+        <div class="small-title">密码</div>
+        <input type="password" class="ipt">
+      </div>
+      <div class="register" href="./register.html">忘记密码/没有账号?</div>
+      <button class="btn">LOGIN</button>
+    </div>
+  </div>
+</body>
+<script>
+  var btn = document.querySelector(".btn")
+  var register = document.querySelector(".register")
+
+  btn.addEventListener('click', () => {
+    this.location.href = "./test.html"
+  })
+  register.addEventListener('click', () => {
+    this.location.href = "./register.html"
+  })
+</script>
+
+</html>
