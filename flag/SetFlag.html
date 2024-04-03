@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SetFlag</title>
+  <style>
+    /* 948.38 * 700 */
+    * {
+      background-color: rgb(252, 235, 212);
+      margin: 0;
+      padding: 0;
+      border: 0;
+      font-size: 30px;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .show {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .image {
+      height: 700px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .bottom {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn {
+      margin: 2vh 1vw;
+      height: 7vh;
+      padding: 1vh 2vh;
+      border: 1px solid;
+      border-radius: 2vw;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="home">
+    <img class="image" src="./image/1.jpg" alt="待加载图片">
+
+    <div class="bottom">
+      <button class="last10 btn">&larr;上十个</button>
+      <button class="last btn">&larr;上一个</button>
+      <div class="show">
+        <div class="nowimage">当前图片名称: <p class="now"></p><br>
+          当前点击球员位置: <p class="position"></p>
+        </div>
+      </div>
+      <button class="next btn">下一个&rarr;</button>
+      <button class="next10 btn">下十个&rarr;</button>
+    </div>
+  </div>
+
+  <script>
+
+
+    var image = document.querySelector('.image')
+    // var count = window.localStorage.getItem("count") ? window.localStorage.getItem("count") : 1
+    var count = 1
+
+    var imageUrl = "./image/" + count + ".jpg"
+    var now = document.querySelector('.now')
+
+    now.innerHTML = imageUrl
+    image.attributes.src.value = imageUrl
+
+    var next = document.querySelector(".next")
+    var last = document.querySelector(".last")
+    var next10 = document.querySelector(".next10")
+    var last10 = document.querySelector(".last10")
+    var position = document.querySelector('.position')
+    position.innerHTML = "X:" + 0 + " Y:" + 0
+
+    next.addEventListener('click', () => {
+      if (count == 1130) {
+        alert("已经是最后一张了")
+      } else {
+        count++;
+        imageUrl = "./image/" + count + ".jpg"
+        image.attributes.src.value = imageUrl
+        now.innerHTML = imageUrl
+        // window.localStorage.setItem("count", count)
+      }
+    })
+
+    last.addEventListener('click', () => {
+      if (count == 1) {
+        alert("前面没有喽！")
+      } else {
+        count--;
+        imageUrl = "./image/" + count + ".jpg"
+        image.attributes.src.value = imageUrl
+        now.innerHTML = imageUrl
+        // window.localStorage.setItem("count", count)
+      }
+    })
+
+    next10.addEventListener('click', () => {
+      if (count == 1130) {
+        alert("已经是最后一张了")
+      } else {
+        if (count == 1) {
+          count += 9;
+        } else {
+          count += 10;
+        }
+
+        imageUrl = "./image/" + count + ".jpg"
+        image.attributes.src.value = imageUrl
+        now.innerHTML = imageUrl
+        // window.localStorage.setItem("count", count)
+      }
+    })
+
+    last10.addEventListener('click', () => {
+      if (count == 1) {
+        alert("前面没有喽！")
+      } else {
+        if (count == 10) {
+          count -= 9
+        } else {
+          count -= 10
+        }
+        imageUrl = "./image/" + count + ".jpg"
+        image.attributes.src.value = imageUrl
+        now.innerHTML = imageUrl
+        // window.localStorage.setItem("count", count)
+      }
+    })
+
+    image.addEventListener('click', (e) => {
+      position.innerHTML = "X:" + e.offsetX + " Y:" + e.offsetY
+    })
+  </script>
+</body>
+
+</html>
